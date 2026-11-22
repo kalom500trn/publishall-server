@@ -21,7 +21,6 @@ const TK_KEY = process.env.TIKTOK_CLIENT_KEY;
 const TK_SECRET = process.env.TIKTOK_CLIENT_SECRET;
 const REDIRECT = process.env.REDIRECT_URI || 'https://publishall-server-npan.vercel.app/auth/callback';
 
-// DEBUG - to check if env vars are loaded (does NOT show secrets)
 app.get('/debug', (req, res) => {
   res.json({
     youtube_id_set: !!YT_ID,
@@ -32,7 +31,6 @@ app.get('/debug', (req, res) => {
   });
 });
 
-// STEP 1 - YouTube Login
 app.get('/auth/youtube', (req, res) => {
   if (!YT_ID) return res.status(500).json({ ok: false, error: 'YOUTUBE_CLIENT_ID missing in Vercel env vars' });
   const url = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + YT_ID +
@@ -43,7 +41,6 @@ app.get('/auth/youtube', (req, res) => {
   res.redirect(url);
 });
 
-// STEP 1 - TikTok Login
 app.get('/auth/tiktok', (req, res) => {
   if (!TK_KEY) return res.status(500).json({ ok: false, error: 'TIKTOK_CLIENT_KEY missing in Vercel env vars' });
   const url = 'https://www.tiktok.com/v2/auth/authorize/?client_key=' + TK_KEY +
@@ -54,12 +51,10 @@ app.get('/auth/tiktok', (req, res) => {
   res.redirect(url);
 });
 
-// STEP 2 - Callback for YouTube + TikTok
 app.get('/auth/callback', async (req, res) => {
   const { code, state } = req.query;
   if (!code) return res.status(400).json({ ok: false, error: 'No code returned' });
 
-  // YOUTUBE
   if (state === 'youtube') {
     try {
       const r = await fetch('https://oauth2.googleapis.com/token', {
@@ -83,7 +78,6 @@ app.get('/auth/callback', async (req, res) => {
     }
   }
 
-  // TIKTOK
   if (state === 'tiktok') {
     try {
       const r = await fetch('https://open.tiktokapis.com/v2/oauth/token/', {
@@ -110,7 +104,6 @@ app.get('/auth/callback', async (req, res) => {
   return res.status(400).json({ ok: false, error: 'Unknown state: ' + state });
 });
 
-// PHASE 3 - Publish (we will build this next, after auth works)
 app.post('/publish', (req, res) => {
   res.json({ todo: 'upload to YouTube + TikTok - Phase 3' });
 });
